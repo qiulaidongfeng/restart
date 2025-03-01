@@ -6,10 +6,10 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
-	"strings"
-	"strconv"
 )
 
 const Mode = "RESTART_MODE"
@@ -55,8 +55,8 @@ func runMaster(d time.Duration) {
 		subProcessCtx, subProcessCancel := context.WithCancel(context.Background())
 		go func() {
 			err := cmd.Wait()
-			if err != nil{
-				if strings.Contains(err.Error(), strconv.Itoa(DirectReturn)){
+			if err != nil {
+				if strings.Contains(err.Error(), strconv.Itoa(DirectReturn)) {
 					directExit = true
 				}
 			}
@@ -75,10 +75,16 @@ func runMaster(d time.Duration) {
 		select {
 		case sig := <-c:
 			log.Println("receive signal", sig)
-			err := cmd.Process.Kill()
+			err := cmd.Process.Signal(sig)
 			if err != nil {
-				log.Fatalln("kill subprocess failed, exit")
+				log.Println(err)
+				err := cmd.Process.Signal(syscall.SIGBUS)
+				if err != nil {
+					log.Println(err)
+					log.Fatalln("kill subprocess failed, exit")
+				}
 			}
+			<-subProcessCtx.Done()
 			os.Exit(0)
 		case <-subProcessCtx.Done():
 			if directExit {
@@ -93,5 +99,3 @@ func runMaster(d time.Duration) {
 		}
 	}
 }
-
-
