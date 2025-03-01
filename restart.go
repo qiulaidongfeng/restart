@@ -16,6 +16,8 @@ const Mode = "RESTART_MODE"
 const WORKER = "WORKER"
 const DirectReturn = 4
 
+var i int
+
 func Run(fn func()) {
 	mode := os.Getenv(Mode)
 	if mode == WORKER {
@@ -91,6 +93,8 @@ func runMaster(d time.Duration) {
 				log.Println("subprocess exit with code: 4, direct exit")
 				os.Exit(4)
 			}
+			i++
+			log.Println(i)
 		case <-stopWorker:
 			err := cmd.Process.Kill()
 			if err != nil {
