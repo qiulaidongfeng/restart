@@ -2,6 +2,7 @@ package restart
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -61,6 +62,7 @@ func runMaster(d time.Duration) {
 				if strings.Contains(err.Error(), strconv.Itoa(DirectReturn)) {
 					directExit = true
 				}
+				fmt.Println(err.Error())
 			}
 			subProcessCancel()
 		}()
